@@ -75,12 +75,14 @@ canvas.height = innerHeight;
 const target = new Target(new Vector2(10, 100), new Vector2(0.2, 0.3), new Vector2(0.1, -0.5)); 
 const missile = new Target(new Vector2(20, -50), new Vector2(0, 0), new Vector2(0, 0)); 
 
-for (let i = 0; i < 100; i++){
+setInterval(() => {
 	target.update(); 
 	missile.update(target); 
 	
 	ctx.beginPath(); 
-	ctx.arc(target.pos.x, target.pos.y, 5, 0, 2 * Math.PI); 
-	ctx.arc(missile.pos.x, missile.pos.y, 5, 0, 2 * Math.PI); 
+	ctx.clearRect(0, 0, innerWidth, innerHeight); 
+	ctx.arc(target.pos.x, target.pos.y, 3, 0, 2 * Math.PI); 
+	ctx.arc(missile.pos.x, missile.pos.y, 3, 0, 2 * Math.PI); 
 	ctx.stroke(); 
-}
+	ctx.fill(); 
+}, 1000)
