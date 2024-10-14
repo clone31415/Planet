@@ -61,7 +61,7 @@ class Missile{
 	}
 
 	update(target){
-    document.write(this.acc.x, this.acc.y); 
+	    console.log(this.acc.x, this.acc.y); 
 		this.acc = this.calc(target); 
 		this.vel = this.vel.add(this.acc); 
 		this.pos = this.pos.add(this.vel); 
@@ -80,15 +80,15 @@ setInterval(() => {
 	target.update(); 
 	missile.update(target); 
 	
-  ctx.fillStyle = ctx.strokeStyle = "red"; 
+	ctx.fillStyle = ctx.strokeStyle = "red"; 
 	ctx.beginPath(); 
 	ctx.clearRect(0, 0, innerWidth, innerHeight); 
 	ctx.arc(target.pos.x, target.pos.y, 3, 0, 2 * Math.PI); 
-  ctx.stroke(); 
-  ctx.fill(); 
-  
-  ctx.fillStyle = ctx.strokeStyle = "blue"; 
-  ctx.beginPath(); 
+	ctx.stroke(); 
+	ctx.fill(); 
+	
+	ctx.fillStyle = ctx.strokeStyle = "blue"; 
+	ctx.beginPath(); 
 	ctx.arc(missile.pos.x, missile.pos.y, 3, 0, 2 * Math.PI); 
 	ctx.stroke(); 
 	ctx.fill(); 
