@@ -68,7 +68,7 @@ class Missile{
 }
 
 
-const canvas = document.getElementById("canvas"), ctx.canvas.getContext("2d"); 
+const canvas = document.getElementById("canvas"), ctx = canvas.getContext("2d"); 
 canvas.width = innerWidth; 
 canvas.height = innerHeight; 
 
