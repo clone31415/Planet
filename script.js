@@ -47,7 +47,7 @@ class Missile{
 		
 		if (typeof this.RTM_old == "undefined"){
 			this.RTM_old = _RTM_new; 
-			return; 
+			return new Vector2(0, 0); 
 		}
 		
 		RTM_new = _RTM_new.norm(); 
@@ -62,7 +62,7 @@ class Missile{
 
 	update(target){
 	    console.log(this); 
-		this.acc = this.calc(target) || 0; 
+		this.acc = this.calc(target); 
 		this.vel = this.vel.add(this.acc); 
 		this.pos = this.pos.add(this.vel); 
 	}
