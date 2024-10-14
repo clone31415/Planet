@@ -22,7 +22,7 @@ class Vector2{
 	norm(){
 		const mag = this.mag(); 
 
-		return Vector2(this.x / mag, this.y / mag); 
+		return new Vector2(this.x / mag, this.y / mag); 
 	}
 }
 
@@ -61,8 +61,8 @@ class Missile{
 	}
 
 	update(target){
-	    console.log(this.acc.x, this.acc.y); 
-		this.acc = this.calc(target); 
+	    console.log(this); 
+		this.acc = this.calc(target) || 0; 
 		this.vel = this.vel.add(this.acc); 
 		this.pos = this.pos.add(this.vel); 
 	}
@@ -74,7 +74,7 @@ canvas.width = innerWidth;
 canvas.height = innerHeight; 
 
 const target = new Target(new Vector2(10, 100), new Vector2(0.2, 0.3), new Vector2(0.1, 0.5)); 
-const missile = new Target(new Vector2(20, 50), new Vector2(0, 0), new Vector2(0, 0)); 
+const missile = new Missile(new Vector2(20, 50), new Vector2(0, 0), new Vector2(0, 0)); 
 
 setInterval(() => {
 	target.update(); 
