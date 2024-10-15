@@ -126,19 +126,20 @@ onmouseup = () => {
 
 onmousemove = () => {
 	if (drag_sep){
-		if (event.clientX - 4 < window.innerWidth / 10){
-			canvas.width = window.innerWidth / 10 - 4; 
-			controls.style.width = window.innerWidth / 10 * 9 - 4; 
-		}else if (window.innerWidth - event.clientX - 4 < window.innerWidth / 10){
-			canvas.width = window.innerWidth / 10 * 9 - 4; 
-			controls.style.width = window.innerWidth / 10 - 4; 
+		if (event.clientX - 5 < window.innerWidth / 10){
+			canvas.width = window.innerWidth / 10 - 5; 
+			controls.style.width = window.innerWidth / 10 * 9 - 5; 
+		}else if (window.innerWidth - event.clientX - 5 < window.innerWidth / 10){
+			canvas.width = window.innerWidth / 10 * 9 - 5; 
+			controls.style.width = window.innerWidth / 10 - 5; 
 		}else{
-			canvas.width = event.clientX - 4; 
-			controls.style.width = window.innerWidth - event.clientX - 4; 
+			canvas.width = event.clientX - 5; 
+			controls.style.width = window.innerWidth - event.clientX - 5; 
 		}
 	}
 
 	if (drag_canvas){
+		console.log(1)
 		planets.offset_x = event.clientX - start_x; 
 		planets.offset_y = event.clientY - start_y; 
 	}
