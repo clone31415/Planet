@@ -1,95 +1,145 @@
-class Vector2{
-	constructor(x, y){
-		Object.assign(this, {x, y}); 
+class Planets{
+	constructor(table){
+		this.list = list; 
+		this.planets = []; 
+		this.offset_x = this.offset_y = 0; 
 	}
 
-	add(other){
-		return new Vector2(this.x + other.x, this.y + other.y); 
+	addPlanet(planet){
+		this.planets.push({
+			name: planet.name, 
+			mass: planet.mass, 
+			x: planet.x, 
+			y: planet.y, 
+			vx: planet.vx, 
+			vy: planet.vy, 
+			size: planet.size, 
+			colour: planet.colour, 
+			previous: []
+		}); 
 	}
 
-	sub(other){
-		return new Vector2(this.x - other.x, this.y - other.y); 
-	}
+	move(){
+		this.list.innerHTML = ""; 
 
-	mult(n){
-		return new Vector2(n * this.x, n * this.y); 
-	}
-
-	mag(){
-		return Math.sqrt(this.x ** 2 + this.y ** 2); 
-	}
-
-	norm(){
-		const mag = this.mag(); 
-
-		return new Vector2(this.x / mag, this.y / mag); 
-	}
-}
-
-class Target{
-	constructor(pos, vel, acc){
-		Object.assign(this, {pos, vel, acc}); 
-	}
-
-	update(){
-		this.vel = this.vel.add(this.acc); 
-		this.pos = this.pos.add(this.vel); 
-	}
-}
-
-class Missile{
-	constructor(pos, vel, acc){
-		Object.assign(this, {pos, vel, acc}); 
-	}
-
-	calc(target){
-		const N = 3, Nt= 9.8, _RTM_new = target.pos.sub(this.pos); 
+		ctx.clearRect(0, 0, canvas.width, canvas.height); 
 		
-		if (typeof this.RTM_old == "undefined"){
-			this.RTM_old = _RTM_new; 
-			return new Vector2(0, 0); 
+		for (const planet of this.planets){			
+			for (const _planet of this.planets){
+				const distance = (planet.x - _planet.x) ** 2 + (planet.y - _planet.y) ** 2; 
+				
+				if (distance > 0){
+					planet.vx += (_planet.x - planet.x) * _planet.mass / distance ** 1.5 * 2; 
+					planet.vy += (_planet.y - planet.y) * _planet.mass / distance ** 1.5 * 2; 
+				}
+			}
+
+			// if (planet.x < 100) planet.vx -= planet.x / 500 - 0.2; 
+			// if (planet.x > canvas.width - 100) planet.vx -= (planet.x - canvas.width) / 500 + 0.2;
+			// if (planet.y < 100) planet.vy -= planet.y / 500 - 0.2; 
+			// if (planet.y > canvas.height - 100) planet.vy -= (planet.y - canvas.height) / 500 + 0.2; 
+			
+			planet.previous.push([planet.x, planet.y]); 
+	
+			if (planet.previous.length == 51) planet.previous.shift(); 
+	
+			ctx.strokeStyle = ctx.fillStyle = planet.colour; 
+			
+			ctx.beginPath(); 
+			ctx.moveTo(planet.previous[0][0] + this.offset_x, planet.previous[0][1] + this.offset_y); 
+			for (const pos of planet.previous.slice(1)) ctx.lineTo(pos[0] + this.offset_x, pos[1] + this.offset_y); 
+			ctx.stroke(); 
+			
+			ctx.beginPath();
+			ctx.arc(planet.x + this.offset_x, planet.y + this.offset_y, planet.size, 0, 2 * Math.PI);
+			ctx.fill();
+
+			this.list.innerHTML += planet.name; 
 		}
-		
-		RTM_new = _RTM_new.norm(); 
-		RTM_old = this.RTM_old.norm(); 
-
-		const LOS_delta = RTM_new.sub(RTM_old), LOS_rate = LOS_delta.mag(), Vc = -LOS_rate; 
-
-		this.RTM_old = _RTM_new; 
-		
-		return RTM_new.mult(N * Vc * LOS_rate).add(LOS_delta.mult(Nt * N / 2)); 
-	}
-
-	update(target){
-	    console.log(this); 
-		this.acc = this.calc(target); 
-		this.vel = this.vel.add(this.acc); 
-		this.pos = this.pos.add(this.vel); 
+	
+		for (const planet of this.planets){
+			// if (planet.vx ** 2 + planet.vy ** 2 > 0.01){
+			// 	planet.vx *= 0.999; 
+			// 	planet.vy *= 0.999; 
+			// }
+			planet.x += planet.vx; 
+			planet.y += planet.vy; 
+		}
 	}
 }
 
 
-const canvas = document.getElementById("canvas"), ctx = canvas.getContext("2d"); 
-canvas.width = innerWidth; 
-canvas.height = innerHeight; 
+const canvas = document.getElementById("canvas"), ctx = canvas.getContext("2d"), controls = document.getElementById("controls"), planets = new Planets(document.getElementById("list")); 
+let drag_sep = false, drag_canvas = false, start_x, start_y, curr_x, curr_y; 
 
-const target = new Target(new Vector2(10, 100), new Vector2(0.2, 0.3), new Vector2(0.1, 0.5)); 
-const missile = new Missile(new Vector2(20, 50), new Vector2(0, 0), new Vector2(0, 0)); 
+canvas.width = window.innerWidth / 3 * 2 - 4; 
+canvas.height = window.innerHeight; 
+controls.style.width = window.innerWidth / 3 - 4; 
 
-setInterval(() => {
-	target.update(); 
-	missile.update(target); 
-	
-	ctx.fillStyle = ctx.strokeStyle = "red"; 
-	ctx.beginPath(); 
-	ctx.clearRect(0, 0, innerWidth, innerHeight); 
-	ctx.arc(target.pos.x, target.pos.y, 3, 0, 2 * Math.PI); 
-	ctx.stroke(); 
-	ctx.fill(); 
-	
-	ctx.fillStyle = ctx.strokeStyle = "blue"; 
-	ctx.beginPath(); 
-	ctx.arc(missile.pos.x, missile.pos.y, 3, 0, 2 * Math.PI); 
-	ctx.stroke(); 
-	ctx.fill(); 
-}, 1000)
+// planets.addPlanet({name: "Planet A", mass: 1800, x: 300, y: 200, vx: 0, vy: 3, size: 3, colour: "red"}); 
+// planets.addPlanet({name: "Planet B", mass: 1800, x: 100, y: 200, vx: 0, vy: -3, size: 3, colour: "green"}); 
+
+planets.addPlanet({name: "Planet", mass: 1, x: 200, y: 450, vx: 0, vy: 30, size: 3, colour: "white"}); 
+planets.addPlanet({name: "Sun A", mass: 100000, x: 600, y: 400, vx: -30, vy: 0, size: 10, colour: "red"}); 
+planets.addPlanet({name: "Sun B", mass: 100000, x: 600, y: 500, vx: 30, vy: 0, size: 10, colour: "red"}); 
+
+const toggle = element => {
+	element = element ? document.getElementById("planets") : document.getElementById("settings"); 
+
+	if (element.style.maxHeight == "0px") element.style.maxHeight = "1000px"; 
+	else element.style.maxHeight = "0px"; 
+}
+
+const adj_len = element => {
+	var test = document.getElementById("length");
+	test.innerHTML = element.value; 
+
+	element.style.width = Math.max(20, test.clientWidth + 5) + "px"; 
+}
+
+const move = () => {
+	planets.move(); 
+
+	requestAnimationFrame(move); 
+}
+
+canvas.oncontextmenu = () => {
+	event.preventDefault(); 
+	planets.addPlanet({name: "", mass: 1, x: event.clientX - planets.offset_x, y: event.clientY - planets.offset_y, vx: 0, vy: 0, size: Math.random() * 0.8 + 1, colour: "white"}); 
+}
+
+onload = () => {
+	move(); 
+}
+
+separator.onmousedown = () => {drag_sep = true}
+
+canvas.onmousedown = () => {
+	drag_canvas = true; 
+	start_x = event.clientX - planets.offset_x; 
+	start_y = event.clientY - planets.offset_y; 
+}
+
+onmouseup = () => {
+	drag_sep = drag_canvas = false; 
+}
+
+onmousemove = () => {
+	if (drag_sep){
+		if (event.clientX - 4 < window.innerWidth / 10){
+			canvas.width = window.innerWidth / 10 - 4; 
+			controls.style.width = window.innerWidth / 10 * 9 - 4; 
+		}else if (window.innerWidth - event.clientX - 4 < window.innerWidth / 10){
+			canvas.width = window.innerWidth / 10 * 9 - 4; 
+			controls.style.width = window.innerWidth / 10 - 4; 
+		}else{
+			canvas.width = event.clientX - 4; 
+			controls.style.width = window.innerWidth - event.clientX - 4; 
+		}
+	}
+
+	if (drag_canvas){
+		planets.offset_x = event.clientX - start_x; 
+		planets.offset_y = event.clientY - start_y; 
+	}
+}
