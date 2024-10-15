@@ -79,9 +79,9 @@ controls.style.width = window.innerWidth / 3 - 4;
 // planets.addPlanet({name: "Planet A", mass: 1800, x: 300, y: 200, vx: 0, vy: 3, size: 3, colour: "red"}); 
 // planets.addPlanet({name: "Planet B", mass: 1800, x: 100, y: 200, vx: 0, vy: -3, size: 3, colour: "green"}); 
 
-planets.addPlanet({name: "Planet", mass: 1, x: 200, y: 450, vx: 0, vy: 30, size: 3, colour: "white"}); 
-planets.addPlanet({name: "Sun A", mass: 100000, x: 600, y: 400, vx: -30, vy: 0, size: 10, colour: "red"}); 
-planets.addPlanet({name: "Sun B", mass: 100000, x: 600, y: 500, vx: 30, vy: 0, size: 10, colour: "red"}); 
+planets.addPlanet({name: "Planet", mass: 1, x: 200, y: 450, vx: 0, vy: 30, size: 2, colour: "white"}); 
+planets.addPlanet({name: "Sun A", mass: 100000, x: 600, y: 400, vx: -30, vy: 0, size: 5, colour: "red"}); 
+planets.addPlanet({name: "Sun B", mass: 100000, x: 600, y: 500, vx: 30, vy: 0, size: 5, colour: "red"}); 
 
 const toggle = element => {
 	element = element ? document.getElementById("planets") : document.getElementById("settings"); 
