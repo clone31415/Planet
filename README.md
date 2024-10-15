@@ -1,1 +1,1 @@
-# Proportional Navigation
+# Planet simulation
