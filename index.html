@@ -1,11 +1,41 @@
 <html>
 	<head>
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
-		<title>Particles</title>
+		<title>Planet</title>
 		<link rel="stylesheet" href="style.css">
 	</head>
 	<body>
 		<canvas id="canvas"></canvas>
+		<div id="separator"><div id="drag"></div></div>
+		<div id="controls">
+			<div class="title" onclick="toggle(0)">Settings</div>
+			<div id="settings">
+				<div class="subtitle">Length scale</div>
+				<div>
+					1 pixel = 
+					<input id="len-scale-a" value="1" oninput="adj_len(this)">
+					e
+					<input id="len-scale-b" value="1" oninput="adj_len(this)">
+					m
+				</div>
+				<br>
+				<div class="subtitle">Time scale</div>
+				<div>
+					10 milliseconds = 
+					<input id="time-scale-a" value="1" oninput="adj_len(this)">
+					e
+					<input id="time-scale-b" value="1" oninput="adj_len(this)">
+					s
+				</div>
+				<br>
+			</div>
+			<br>
+			<div class="title" onclick="toggle(1)">Planets</div>
+			<div id="planets">
+				<table id="list"></table>
+			</div>
+		</div>
+		<div id="length"></div>
 	</body>
 	<script src="script.js"></script>
 </html>
