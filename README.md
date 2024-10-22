@@ -4,7 +4,7 @@ rel pos = (x, y)
 
 magnitude = r
 
-m = r^2 = x^2 + y^2
+d = r^2 = x^2 + y^2
 
 normalise (x, y) = (x / r, y / r)
 
@@ -20,6 +20,16 @@ a(x) = GMr^-2 * x / r
 
 a(x) = GMxr^-3
 
-a(x) = GMx * sqrt(m)^-3
+a(x) = GMx * sqrt(d)^-3
 
-a(x) = GMxm^-1.5
+a(x) = GMxd^-1.5
+
+---
+
+a(y) = GMr^-2 * y / r
+
+a(y) = GMyr^-3
+
+a(y) = GMy * sqrt(d)^-3
+
+a(y) = GMyd^-1.5
