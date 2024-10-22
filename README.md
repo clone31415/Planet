@@ -34,6 +34,12 @@ N * m^2 / kg^2 * kg / m^2
 
 ---
 
-a(x) = GMx * sqrt(m)^-3
+a(x) = GMx * sqrt(d)^-3
 
-a(x) = GMxm^-1.5
+a(x) = GMxd^-1.5
+
+---
+
+a(y) = GMy * sqrt(d)^-3
+
+a(y) = GMyd^-1.5
