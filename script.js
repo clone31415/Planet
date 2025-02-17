@@ -49,29 +49,39 @@ class Planets{
 		this.planets = []
 	}
 
-	add(mass, x, y, vx, vy, ax, ay, size, colour){
+	add(mass, x, y, vx, vy, size, colour){
+		const id = Math.random().toString().slice(2)
+
 		this.planets.push({
-			id: Math.random().toString().slice(2), 
+			id, 
 			mass, // kg
 			pos: new Vector2D(x, y), // m
 			vel: new Vector2D(vx, vy), // ms^-1
-			acc: new Vector2D(ax, ay), // ms^-2
 			size, // pixel
 			colour, 
 			prev: []
 		})
+
+		return id
 	}
 
 	setAcc(){
-		for (let i = 0; i < this.planets.length; i++) this.planets[i].acc = new Vector2D()
+		this.planets = this.planets.map(planet => ({
+			...planet,
+			acc: new Vector2D() 
+		})).sort((planet1, planet2) => !planet1.mass - !planet2.mass)
 
 		for (let i = 0; i < this.planets.length - 1; i++){
 			for (let j = i + 1; j < this.planets.length; j++){
-				const diff = this.planets[i].pos.sub(this.planets[j].pos), _diff = diff.scale(Planets.G * diff.magSq ** -1.5)
+				if (!this.planets[i].mass && !this.planets[j].mass) return
+
+				let diff = this.planets[i].pos.sub(this.planets[j].pos)
 
 				if (diff.magSq != 0){
-					this.planets[i].acc = this.planets[i].acc.add(_diff.scale(-this.planets[j].mass))
-					this.planets[j].acc = this.planets[j].acc.add(_diff.scale(this.planets[i].mass))
+					diff = diff.scale(Planets.G * diff.magSq ** -1.5)
+
+					if (this.planets[j].mass) this.planets[i].acc = this.planets[i].acc.add(diff.scale(-this.planets[j].mass))
+					this.planets[j].acc = this.planets[j].acc.add(diff.scale(this.planets[i].mass))
 				}
 			}
 		}
@@ -173,13 +183,13 @@ class Planets{
 
 const planets = new Planets(ctx, Planets.yoshida(6))
 	
-planets.add(1, 400, 450, 0, 30, 0, 0, 3, "cyan")
-planets.add(3e15, 800, 400, -30, 0, 0, 0, 10, "white")
-planets.add(3e15, 800, 500, 30, 0, 0, 0, 10, "white")
+planets.add(1, 400, 450, 0, 30, 3, "cyan")
+planets.add(3e15, 800, 400, -30, 0, 10, "white")
+planets.add(3e15, 800, 500, 30, 0, 10, "white")
 
 planets.move()
 
-onclick = () => planets.add(0, event.clientX, event.clientY, 0, 0, 0, 0, 5, "red") // Math.random() * 0.8 + 1)
+onclick = () => planets.add(0, event.clientX, event.clientY, 0, 0, 5, "red") // Math.random() * 0.8 + 1)
 
 onmousedown = () => {
 	right = event.which == 3
