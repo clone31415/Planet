@@ -41,7 +41,7 @@ class Planets{
 
 	constructor(ctx, integrator){
 		this.dt = 1
-		this.split = 5
+		this.split = 10
 		this.tail = 30
 
 		this.ctx = ctx
@@ -89,31 +89,43 @@ class Planets{
 
 	draw(){
 		ctx.clearRect(0, 0, canvas.width, canvas.height)
-		
+
+		ctx.globalAlpha = 0.7
+
 		for (const planet of this.planets){
-			planet.prev.push(planet.pos)
+			// planet.prev.push(planet.pos)
 
-			if (planet.prev.length > this.tail / this.dt) planet.prev.shift()
+			// if (planet.prev.length > this.tail / this.dt) planet.prev.shift()
 
-			ctx.fillStyle = ctx.strokeStyle = planet.colour
-			ctx.globalAlpha = 1
-			
-			ctx.beginPath()
-			ctx.arc(planet.pos.x, planet.pos.y, planet.size, 0, 2 * Math.PI)
-			ctx.fill()
+			ctx.strokeStyle = planet.colour
 
-			ctx.globalAlpha = 0.7
-			
 			ctx.beginPath()
 			ctx.moveTo(planet.prev[0].x, planet.prev[0].y)
 			for (const pos of planet.prev.slice(1)) ctx.lineTo(pos.x, pos.y)
 			ctx.stroke()
 		}
 
+		ctx.globalAlpha = 1
+
+		for (const planet of this.planets){
+			ctx.fillStyle = planet.colour
+
+			ctx.beginPath()
+			ctx.arc(planet.pos.x, planet.pos.y, planet.size, 0, 2 * Math.PI)
+			ctx.fill()
+		}
 	}
 
 	move(){
-		for (let i = 0; i < this.split; i++) this.integrator()
+		for (let i = 0; i < this.split; i++){
+			this.integrator()
+			
+			for (const planet of this.planets){
+				planet.prev.push(planet.pos)
+
+				if (planet.prev.length > 300) planet.prev.shift()
+			}
+		}
 		this.draw()
 		// console.log(this.energy)
 
