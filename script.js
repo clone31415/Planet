@@ -41,7 +41,7 @@ class Planets{
 
 	constructor(ctx, integrator){
 		this.dt = 1
-		this.split = 1
+		this.split = 5
 		this.tail = 30
 
 		this.ctx = ctx
@@ -49,7 +49,7 @@ class Planets{
 		this.planets = []
 	}
 
-	add(mass, x, y, vx, vy, ax, ay, size){
+	add(mass, x, y, vx, vy, ax, ay, size, colour){
 		this.planets.push({
 			id: Math.random().toString().slice(2), 
 			mass, // kg
@@ -57,6 +57,7 @@ class Planets{
 			vel: new Vector2D(vx, vy), // ms^-1
 			acc: new Vector2D(ax, ay), // ms^-2
 			size, // pixel
+			colour, 
 			prev: []
 		})
 	}
@@ -68,8 +69,10 @@ class Planets{
 			for (let j = i + 1; j < this.planets.length; j++){
 				const diff = this.planets[i].pos.sub(this.planets[j].pos), _diff = diff.scale(Planets.G * diff.magSq ** -1.5)
 
-				this.planets[i].acc = this.planets[i].acc.add(_diff.scale(-this.planets[j].mass))
-				this.planets[j].acc = this.planets[j].acc.add(_diff.scale(this.planets[i].mass))
+				if (diff.magSq != 0){
+					this.planets[i].acc = this.planets[i].acc.add(_diff.scale(-this.planets[j].mass))
+					this.planets[j].acc = this.planets[j].acc.add(_diff.scale(this.planets[i].mass))
+				}
 			}
 		}
 	}
@@ -82,17 +85,19 @@ class Planets{
 
 			if (planet.prev.length > this.tail / this.dt) planet.prev.shift()
 
-			ctx.fillStyle = "white"
-			ctx.strokeStyle = "#bbbbbb"
+			ctx.fillStyle = ctx.strokeStyle = planet.colour
+			ctx.globalAlpha = 1
+			
+			ctx.beginPath()
+			ctx.arc(planet.pos.x, planet.pos.y, planet.size, 0, 2 * Math.PI)
+			ctx.fill()
+
+			ctx.globalAlpha = 0.7
 			
 			ctx.beginPath()
 			ctx.moveTo(planet.prev[0].x, planet.prev[0].y)
 			for (const pos of planet.prev.slice(1)) ctx.lineTo(pos.x, pos.y)
 			ctx.stroke()
-			
-			ctx.beginPath()
-			ctx.arc(planet.pos.x, planet.pos.y, planet.size, 0, 2 * Math.PI)
-			ctx.fill()
 		}
 
 	}
@@ -100,7 +105,7 @@ class Planets{
 	move(){
 		for (let i = 0; i < this.split; i++) this.integrator()
 		this.draw()
-		console.log(this.energy)
+		// console.log(this.energy)
 
 		requestAnimationFrame(this.move.bind(this))
 	}
@@ -117,104 +122,64 @@ class Planets{
 		return energy
 	}
 
-	static euler(){
-		this.setAcc()
-
-		for (const planet of this.planets){
-			planet.vel = planet.vel.add(planet.acc.scale(this.dt / this.split))
-			planet.pos = planet.pos.add(planet.vel.scale(this.dt / this.split))
-		}
-	}
-
-	static leapfrog(){ // same as velocity verlet
-		for (const planet of this.planets) planet.pos = planet.pos.add(planet.vel.scale(this.dt / this.split / 2))
-
-		this.setAcc()
-
-		for (const planet of this.planets){
-			planet.vel = planet.vel.add(planet.acc.scale(this.dt / this.split))
-			planet.pos = planet.pos.add(planet.vel.scale(this.dt / this.split / 2))
-		}
-	}
-
-	static get yoshida4(){
-		// const cbrt2 = Math.cbrt(2), w1 = 1 / (2 - cbrt2), w0 = -cbrt2 * w1, coeff = {c: [w1 / 2, (w0 + w1) / 2, (w0 + w1) / 2, w1 / 2], d: [w1, w0, w1]}
-
-		// function symplectic_integrator_numeric(order) {
-		// 	if (order % 2 !== 0) {
-		// 		console.log("This integrator is only for even order");
-		// 		return;
-		// 	}
-		
-		// 	let S = [0.5, 1, 0.5];
-		
-		// 	if (order > 2) {
-		// 		for (let n = 1; n < order / 2; n++) {
-		// 			let alpha = Math.pow(2.0, (1.0 / (2.0 * n + 1)));
-		// 			let x0 = -alpha / (2.0 - alpha);
-		// 			let x1 = 1.0 / (2.0 - alpha);
-		// 			console.log(x0,x1)
-		
-		// 			let TC = S.map(i => i * x0);
-		// 			let TL = S.map(i => i * x1);
-		
-		// 			let T = [];
-		
-		// 			// Loop for TL[ : -1 ]
-		// 			for (let i = 0; i < TL.length - 1; i++) {
-		// 				T.push(TL[i]);
-		// 			}
-		
-		// 			// Add the last part of T
-		// 			T.push(TL[TL.length - 1] + TC[0]);
-		
-		// 			// Loop for TC[1: -1]
-		// 			for (let i = 1; i < TC.length - 1; i++) {
-		// 				T.push(TC[i]);
-		// 			}
-		
-		// 			// Add the first part of T
-		// 			T.push(TC[TC.length - 1] + TL[0]);
-		
-		// 			// Loop for TL[1:]
-		// 			for (let i = 1; i < TL.length; i++) {
-		// 				T.push(TL[i]);
-		// 			}
-		
-		// 			S = T;
-		// 		}
-		// 	}
-		
-		// 	return S;
-		// }
-
-		const coeff = {c: [0.7936124638611216, -0.20627658481643976, -0.20627658481643976, -0.11800886788129283, 0.20627658481643976, 0.20627658481643976, -0.11800886788129283, -0.20627658481643976, -0.20627658481643976, 0.7936124638611216], d: [1.5872249277222432, -1.999778097355123, 1.5872249277222432, -1.8232426634848289, 2.2971418107909303, -1.8232426634848289, 1.5872249277222432, -1.999778097355123, 1.5872249277222432]}
-		
+	static splitStep(coeff){
 		return function(){
-			for (const planet of this.planets) planet.pos = planet.pos.add(planet.vel.scale(coeff.c[0] * this.dt / this.split))
+			for (let i = 0; i < coeff.length; i++){
+				if (i % 2 == 0) for (const planet of this.planets) planet.pos = planet.pos.add(planet.vel.scale(coeff[i] * this.dt / this.split))
+				else{
+					this.setAcc()
 
-			for (let i = 0; i < coeff.d.length; i++){
-				this.setAcc()
-	
-				for (const planet of this.planets){
-					planet.vel = planet.vel.add(planet.acc.scale(coeff.d[i] * this.dt / this.split))
-					planet.pos = planet.pos.add(planet.vel.scale(coeff.c[i + 1] * this.dt / this.split))
+					for (const planet of this.planets) planet.vel = planet.vel.add(planet.acc.scale(coeff[i] * this.dt / this.split))
 				}
 			}
 		}
 	}
+
+	static get euler(){
+		return Planets.splitStep([1, 1])
+	}
+
+	static get leapfrog(){ 
+		return Planets.splitStep([0.5, 1, 0.5])
+	}
+
+	static yoshida(order){
+		if (order < 2 && order % 2 !== 0) throw new Error("Invalid order")
+	
+		let coeff = [0.5, 1, 0.5]
+	
+		if (order > 2) {
+			for (let n = 1; n < order / 2; n++){
+				let alpha = 2 ** (1 / (2 * n + 1)), x1 = 1/ (2 - alpha), x0 = -alpha * x1, TC = coeff.map(i => i * x0), TL = coeff.map(i => i * x1)
+	
+				coeff = [
+					...TL.slice(0, TL.length - 1),
+					TL[TL.length - 1] + TC[0],
+					...TC.slice(1, TC.length - 1), 
+					TC[TC.length - 1] + TL[0], 
+					...TL.slice(1)
+				]
+			}
+		}
+
+		return Planets.splitStep(coeff)
+	}
+
+	static rk4(){
+
+	}
 }
 
 
-const planets = new Planets(ctx, Planets.yoshida4)
+const planets = new Planets(ctx, Planets.yoshida(6))
 	
-planets.add(1, 400, 450, 0, 30, 0, 0, 3)
-planets.add(3e15, 800, 400, -30, 0, 0, 0, 10)
-planets.add(3e15, 800, 500, 30, 0, 0, 0, 10)
+planets.add(1, 400, 450, 0, 30, 0, 0, 3, "cyan")
+planets.add(3e15, 800, 400, -30, 0, 0, 0, 10, "white")
+planets.add(3e15, 800, 500, 30, 0, 0, 0, 10, "white")
 
 planets.move()
 
-onclick = () => planets.add(1, event.clientX, event.clientY, 0, 0, 0, 0, Math.random() * 0.8 + 1)
+onclick = () => planets.add(0, event.clientX, event.clientY, 0, 0, 0, 0, 5, "red") // Math.random() * 0.8 + 1)
 
 onmousedown = () => {
 	right = event.which == 3
