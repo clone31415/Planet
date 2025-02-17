@@ -6,19 +6,6 @@
 	</head>
 	<body>
 		<canvas id="canvas"></canvas>
-	</body>
-	<script src="script.js"></script>
-</html>
-
-<!--
-<html>
-	<head>
-		<meta name="viewport" content="width=device-width, initial-scale=1.0">
-		<title>Planet</title>
-		<link rel="stylesheet" href="style.css">
-	</head>
-	<body>
-		<canvas id="canvas"></canvas>
 		<div id="separator"><div id="drag"></div></div>
 		<div id="controls">
 			<div class="title" onclick="toggle(0)">Settings</div>
@@ -26,18 +13,18 @@
 				<div class="subtitle">Length scale</div>
 				<div>
 					1 pixel = 
-					<input id="len-scale-a" value="1" oninput="adj_len(this)">
+					<input id="len-scale-a" value="1" oninput="adjLen(this)">
 					e
-					<input id="len-scale-b" value="1" oninput="adj_len(this)">
+					<input id="len-scale-b" value="1" oninput="adjLen(this)">
 					m
 				</div>
 				<br>
 				<div class="subtitle">Time scale</div>
 				<div>
 					10 milliseconds = 
-					<input id="time-scale-a" value="1" oninput="adj_len(this)">
+					<input id="time-scale-a" value="1" oninput="adjLen(this)">
 					e
-					<input id="time-scale-b" value="1" oninput="adj_len(this)">
+					<input id="time-scale-b" value="1" oninput="adjLen(this)">
 					s
 				</div>
 				<br>
