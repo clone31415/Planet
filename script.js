@@ -1,8 +1,3 @@
-const canvas = document.getElementById("canvas"), ctx = canvas.getContext("2d")
-canvas.width = window.innerWidth
-canvas.height = window.innerHeight
-let curr_x, curr_y, right = false // num = canvas.width * canvas.height / 12000
-
 class Vector2D{
     constructor(x = 0, y = 0){
         this.x = x
@@ -47,6 +42,7 @@ class Planets{
 		this.ctx = ctx
 		this.integrator = integrator.bind(this)
 		this.planets = []
+		this.offset = new Vector2D()
 	}
 
 	add(mass, x, y, vx, vy, size, colour){
@@ -88,31 +84,31 @@ class Planets{
 	}
 
 	draw(){
-		ctx.clearRect(0, 0, canvas.width, canvas.height)
+		this.ctx.clearRect(0, 0, canvas.width, canvas.height)
 
-		ctx.globalAlpha = 0.7
+		this.ctx.globalAlpha = 0.7
 
 		for (const planet of this.planets){
 			// planet.prev.push(planet.pos)
 
 			// if (planet.prev.length > this.tail / this.dt) planet.prev.shift()
 
-			ctx.strokeStyle = planet.colour
+			this.ctx.strokeStyle = planet.colour
 
-			ctx.beginPath()
-			ctx.moveTo(planet.prev[0].x, planet.prev[0].y)
-			for (const pos of planet.prev.slice(1)) ctx.lineTo(pos.x, pos.y)
-			ctx.stroke()
+			this.ctx.beginPath()
+			this.ctx.moveTo(planet.prev[0].x + this.offset.x, planet.prev[0].y + this.offset.y)
+			for (const pos of planet.prev.slice(1)) this.ctx.lineTo(pos.x + this.offset.x, pos.y + this.offset.y)
+			this.ctx.stroke()
 		}
 
-		ctx.globalAlpha = 1
+		this.ctx.globalAlpha = 1
 
 		for (const planet of this.planets){
-			ctx.fillStyle = planet.colour
+			this.ctx.fillStyle = planet.colour
 
-			ctx.beginPath()
-			ctx.arc(planet.pos.x, planet.pos.y, planet.size, 0, 2 * Math.PI)
-			ctx.fill()
+			this.ctx.beginPath()
+			this.ctx.arc(planet.pos.x + this.offset.x, planet.pos.y + this.offset.y, planet.size, 0, 2 * Math.PI)
+			this.ctx.fill()
 		}
 	}
 
@@ -193,128 +189,17 @@ class Planets{
 }
 
 
-const planets = new Planets(ctx, Planets.yoshida(6))
-	
+const canvas = document.getElementById("canvas"), controls = document.getElementById("controls"), planets = new Planets(canvas.getContext("2d"), Planets.yoshida(6))
+let dragSep = false, dragCanvas = false, start
+canvas.width = window.innerWidth / 3 * 2 - 4
+canvas.height = window.innerHeight
+controls.style.width = window.innerWidth / 3 - 4
+
 planets.add(1, 400, 450, 0, 30, 3, "cyan")
 planets.add(3e15, 800, 400, -30, 0, 10, "white")
 planets.add(3e15, 800, 500, 30, 0, 10, "white")
 
 planets.move()
-
-onclick = () => planets.add(0, event.clientX, event.clientY, 0, 0, 5, "red") // Math.random() * 0.8 + 1)
-
-onmousedown = () => {
-	right = event.which == 3
-	
-	if (event.which == 2) planets.pop()
-}
-
-onmouseup = () => {right = false}
-
-oncontextmenu = () => {event.preventDefault()}
-
-// onload = () => {	
-//  	for (var count = 0; count < num; count++) planets.push({mass: 10, x: Math.random() * canvas.width, y: Math.random() * canvas.height, vx: Math.random() * 4 - 2, vy: Math.random() * 4 - 2, size: Math.random() * 0.8 + 1, previous: []})
-// }
-
-onresize = () => {
-	canvas.width = window.innerWidth
-	canvas.height = window.innerHeight
-}
-
-onmousemove = () => {
-	curr_x = event.clientX
-	curr_y = event.clientY
-}
-
-onmouseout = () => {curr_x = curr_y = undefined}
-
-/*
-
-class Planets{
-	constructor(table){
-		this.list = list; 
-		this.planets = []; 
-		this.offset_x = this.offset_y = 0; 
-	}
-
-	addPlanet(planet){
-		this.planets.push({
-			name: planet.name, 
-			mass: planet.mass, 
-			x: planet.x, 
-			y: planet.y, 
-			vx: planet.vx, 
-			vy: planet.vy, 
-			size: planet.size, 
-			colour: planet.colour, 
-			previous: []
-		}); 
-	}
-
-	move(){
-		this.list.innerHTML = ""; 
-
-		ctx.clearRect(0, 0, canvas.width, canvas.height); 
-		
-		for (const planet of this.planets){			
-			for (const _planet of this.planets){
-				const distance = (planet.x - _planet.x) ** 2 + (planet.y - _planet.y) ** 2; 
-				
-				if (distance > 0){
-					planet.vx += (_planet.x - planet.x) * _planet.mass / distance ** 1.5 * 2; 
-					planet.vy += (_planet.y - planet.y) * _planet.mass / distance ** 1.5 * 2; 
-				}
-			}
-
-			// if (planet.x < 100) planet.vx -= planet.x / 500 - 0.2; 
-			// if (planet.x > canvas.width - 100) planet.vx -= (planet.x - canvas.width) / 500 + 0.2;
-			// if (planet.y < 100) planet.vy -= planet.y / 500 - 0.2; 
-			// if (planet.y > canvas.height - 100) planet.vy -= (planet.y - canvas.height) / 500 + 0.2; 
-			
-			planet.previous.push([planet.x, planet.y]); 
-	
-			if (planet.previous.length == 51) planet.previous.shift(); 
-	
-			ctx.strokeStyle = ctx.fillStyle = planet.colour; 
-			
-			ctx.beginPath(); 
-			ctx.moveTo(planet.previous[0][0] + this.offset_x, planet.previous[0][1] + this.offset_y); 
-			for (const pos of planet.previous.slice(1)) ctx.lineTo(pos[0] + this.offset_x, pos[1] + this.offset_y); 
-			ctx.stroke(); 
-			
-			ctx.beginPath();
-			ctx.arc(planet.x + this.offset_x, planet.y + this.offset_y, planet.size, 0, 2 * Math.PI);
-			ctx.fill();
-
-			this.list.innerHTML += planet.name; 
-		}
-	
-		for (const planet of this.planets){
-			// if (planet.vx ** 2 + planet.vy ** 2 > 0.01){
-			// 	planet.vx *= 0.999; 
-			// 	planet.vy *= 0.999; 
-			// }
-			planet.x += planet.vx; 
-			planet.y += planet.vy; 
-		}
-	}
-}
-
-
-const canvas = document.getElementById("canvas"), ctx = canvas.getContext("2d"), controls = document.getElementById("controls"), planets = new Planets(document.getElementById("list")); 
-let drag_sep = false, drag_canvas = false, start_x, start_y, curr_x, curr_y; 
-
-canvas.width = window.innerWidth / 3 * 2 - 4; 
-canvas.height = window.innerHeight; 
-controls.style.width = window.innerWidth / 3 - 4; 
-
-// planets.addPlanet({name: "Planet A", mass: 1800, x: 300, y: 200, vx: 0, vy: 3, size: 3, colour: "red"}); 
-// planets.addPlanet({name: "Planet B", mass: 1800, x: 100, y: 200, vx: 0, vy: -3, size: 3, colour: "green"}); 
-
-planets.addPlanet({name: "Planet", mass: 1, x: 200, y: 450, vx: 0, vy: 30, size: 2, colour: "white"}); 
-planets.addPlanet({name: "Sun A", mass: 100000, x: 600, y: 400, vx: -30, vy: 0, size: 4, colour: "red"}); 
-planets.addPlanet({name: "Sun B", mass: 100000, x: 600, y: 500, vx: 30, vy: 0, size: 4, colour: "red"}); 
 
 const toggle = element => {
 	element = element ? document.getElementById("planets") : document.getElementById("settings"); 
@@ -323,42 +208,32 @@ const toggle = element => {
 	else element.style.maxHeight = "0px"; 
 }
 
-const adj_len = element => {
+const adjLen = element => {
 	var test = document.getElementById("length");
 	test.innerHTML = element.value; 
 
 	element.style.width = Math.max(20, test.clientWidth + 5) + "px"; 
 }
 
-const move = () => {
-	planets.move(); 
+oncontextmenu = () => {event.preventDefault()}
 
-	requestAnimationFrame(move); 
-}
+separator.onmousedown = () => {dragSep = true}
 
-canvas.oncontextmenu = () => {
-	event.preventDefault(); 
-	planets.addPlanet({name: "", mass: 1, x: event.clientX - planets.offset_x, y: event.clientY - planets.offset_y, vx: 0, vy: 0, size: Math.random() * 0.8 + 1, colour: "white"}); 
-}
-
-onload = () => {
-	move(); 
-}
-
-separator.onmousedown = () => {drag_sep = true}
+canvas.onclick = () => planets.add(0, event.clientX, event.clientY, 0, 0, 5, "red") // Math.random() * 0.8 + 1)
 
 canvas.onmousedown = () => {
-	drag_canvas = true; 
-	start_x = event.clientX - planets.offset_x; 
-	start_y = event.clientY - planets.offset_y; 
+	if (event.which == 3){
+		dragCanvas = true
+		start = (new Vector2D(event.clientX, event.clientY)).sub(planets.offset)
+	}
 }
 
 onmouseup = () => {
-	drag_sep = drag_canvas = false; 
+	dragSep = dragCanvas = false; 
 }
 
 onmousemove = () => {
-	if (drag_sep){
+	if (dragSep){
 		if (event.clientX - 5 < window.innerWidth / 10){
 			canvas.width = window.innerWidth / 10 - 5; 
 			controls.style.width = window.innerWidth / 10 * 9 - 5; 
@@ -371,9 +246,12 @@ onmousemove = () => {
 		}
 	}
 
-	if (drag_canvas){
-		console.log(1)
-		planets.offset_x = event.clientX - start_x; 
-		planets.offset_y = event.clientY - start_y; 
+	if (dragCanvas){
+		planets.offset = new Vector2D(event.clientX, event.clientY).sub(start)
 	}
+}
+
+onresize = () => {
+	canvas.width = window.innerWidth
+	canvas.height = window.innerHeight
 }
