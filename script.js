@@ -1,3 +1,6 @@
+// class 
+
+
 class Vector2D{
     constructor(x = 0, y = 0){
         this.x = x
@@ -33,6 +36,7 @@ class Vector2D{
 
 class Planets{
 	static G = 6.6743e-11
+	static scale = 1e100
 
 	constructor(ctx, integrator){
 		this.dt = 1
@@ -168,7 +172,7 @@ class Planets{
 	
 		if (order > 2) {
 			for (let n = 1; n < order / 2; n++){
-				let alpha = 2 ** (1 / (2 * n + 1)), x1 = 1/ (2 - alpha), x0 = -alpha * x1, TC = coeff.map(i => i * x0), TL = coeff.map(i => i * x1)
+				let alpha = 2 ** (1 / (2 * n + 1)), x1 = 1 / (2 - alpha), x0 = -alpha * x1, TC = coeff.map(i => i * x0), TL = coeff.map(i => i * x1)
 	
 				coeff = [
 					...TL.slice(0, TL.length - 1),
@@ -189,7 +193,7 @@ class Planets{
 }
 
 
-const canvas = document.getElementById("canvas"), controls = document.getElementById("controls"), planets = new Planets(canvas.getContext("2d"), Planets.yoshida(6))
+const canvas = document.getElementById("canvas"), controls = document.getElementById("controls"), planets = new Planets(canvas.getContext("2d"), Planets.yoshida(10))
 let dragSep = false, dragCanvas = false, start
 canvas.width = window.innerWidth / 3 * 2 - 4
 canvas.height = window.innerHeight
@@ -212,7 +216,7 @@ const adjLen = element => {
 	var test = document.getElementById("length");
 	test.innerHTML = element.value; 
 
-	element.style.width = Math.max(20, test.clientWidth + 5) + "px"; 
+	element.style.width = Math.min(Math.max(20, test.clientWidth + 5), 200) + "px"
 }
 
 oncontextmenu = () => {event.preventDefault()}
@@ -252,6 +256,7 @@ onmousemove = () => {
 }
 
 onresize = () => {
-	canvas.width = window.innerWidth
+	canvas.width = window.innerWidth / 3 * 2 - 4
 	canvas.height = window.innerHeight
+	controls.style.width = window.innerWidth / 3 - 4
 }
