@@ -39,7 +39,7 @@ class Planets{
 	static scale = 1e100
 
 	constructor(ctx, integrator){
-		this.dt = 1
+		this.dt = 0.1
 		this.split = 10
 		this.tail = 30
 
@@ -62,29 +62,36 @@ class Planets{
 			prev: []
 		})
 
+		this.planets.sort((planet1, planet2) => !planet1.mass - !planet2.mass)
+
 		return id
 	}
 
-	setAcc(){
-		this.planets = this.planets.map(planet => ({
-			...planet,
-			acc: new Vector2D() 
-		})).sort((planet1, planet2) => !planet1.mass - !planet2.mass)
+	getAcc(planets){
+		let result = planets.map(planet => ({
+			id: planet.id, 
+			mass: planet.mass,
+			pos: planet.pos,
+			acc: new Vector2D()
+		}))
 
-		for (let i = 0; i < this.planets.length - 1; i++){
-			for (let j = i + 1; j < this.planets.length; j++){
-				if (!this.planets[i].mass && !this.planets[j].mass) return
+		for (let i = 0; i < result.length - 1; i++){
+			for (let j = i + 1; j < result.length; j++){
 
-				let diff = this.planets[i].pos.sub(this.planets[j].pos)
+				if (!result[i].mass && !result[j].mass) return result
+
+				let diff = result[i].pos.sub(result[j].pos)
 
 				if (diff.magSq != 0){
 					diff = diff.scale(Planets.G * diff.magSq ** -1.5)
 
-					if (this.planets[j].mass) this.planets[i].acc = this.planets[i].acc.add(diff.scale(-this.planets[j].mass))
-					this.planets[j].acc = this.planets[j].acc.add(diff.scale(this.planets[i].mass))
+					if (result[j].mass) result[i].acc = result[i].acc.add(diff.scale(-result[j].mass))
+					result[j].acc = result[j].acc.add(diff.scale(result[i].mass))
 				}
 			}
 		}
+		
+		return result
 	}
 
 	draw(){
@@ -123,7 +130,7 @@ class Planets{
 			for (const planet of this.planets){
 				planet.prev.push(planet.pos)
 
-				if (planet.prev.length > 300) planet.prev.shift()
+				if (planet.prev.length > this.tail / this.dt * this.split) planet.prev.shift()
 			}
 		}
 		this.draw()
@@ -149,9 +156,9 @@ class Planets{
 			for (let i = 0; i < coeff.length; i++){
 				if (i % 2 == 0) for (const planet of this.planets) planet.pos = planet.pos.add(planet.vel.scale(coeff[i] * this.dt / this.split))
 				else{
-					this.setAcc()
+					const planets = this.getAcc(this.planets)
 
-					for (const planet of this.planets) planet.vel = planet.vel.add(planet.acc.scale(coeff[i] * this.dt / this.split))
+					for (let j = 0; j < this.planets.length; j++) this.planets[j].vel = this.planets[j].vel.add(planets[j].acc.scale(coeff[i] * this.dt / this.split))
 				}
 			}
 		}
@@ -193,7 +200,7 @@ class Planets{
 }
 
 
-const canvas = document.getElementById("canvas"), controls = document.getElementById("controls"), planets = new Planets(canvas.getContext("2d"), Planets.yoshida(10))
+const canvas = document.getElementById("canvas"), controls = document.getElementById("controls"), planets = new Planets(canvas.getContext("2d"), Planets.yoshida(6))
 let dragSep = false, dragCanvas = false, start
 canvas.width = window.innerWidth / 3 * 2 - 4
 canvas.height = window.innerHeight
